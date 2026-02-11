@@ -9,10 +9,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 关键修改1：强制降级到 ubuntu-22.04，这个环境对旧版构建工具支持更好
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
+
+      # 关键修改2：清理环境，释放空间，避免磁盘爆满
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -36,21 +49,26 @@ jobs:
             zlib1g-dev \
             libncurses5-dev \
             libncursesw5-dev \
+            libtinfo5 \
             cmake \
             libffi-dev \
             libssl-dev \
             zip \
             unzip \
-            openjdk-17-jdk
+            openjdk-17-jdk \
+            automake \
+            gettext \
+            autopoint
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython==0.29.36
+          # 关键修改3：使用指定版本的 Cython 和 buildozer
+          pip install buildozer==1.5.0 cython==0.29.36
 
       - name: Build with Buildozer
         run: |
-          # 同意 SDK 协议并开始构建
+          # 关键修改4：显式接受 SDK 协议
           yes | buildozer android debug
 
       - name: Upload APK
