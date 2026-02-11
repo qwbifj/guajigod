@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env/
+
+# Kivy / Buildozer
+.buildozer/
+bin/
+dist/
+
+# IDEs
+.vscode/
+.idea/
+.trae/
+
+# Project specific
+downloads/
+PyInstaller/
+backups/
+build/
+*.log
+*.spec
+!buildozer.spec
+release/
+server/
+web_build_stage/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
