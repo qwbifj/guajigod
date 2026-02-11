@@ -9,24 +9,52 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
 
-      # 关键修改：直接使用 Kivy 官方提供的 Docker Action
-      # 这个 Action 内部封装了一个配置完美的 Docker 容器
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      # 1. 释放空间
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
         with:
-          command: buildozer android debug
-          buildozer_version: stable
-          workdir: .
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      # 2. 设置 Python 3.8 (最最最稳的版本，配合旧版 SDK 无敌)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      # 3. 只安装最基础的依赖，不搞那些花里胡哨的库
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential git python3-pip python3-setuptools python3-venv \
+            libffi-dev libssl-dev autoconf libtool pkg-config zlib1g-dev \
+            libncurses5-dev libncursesw5-dev cmake unzip openjdk-17-jdk \
+            automake gettext autopoint
+
+      # 4. 安装 Buildozer，这次我们不指定 cython，让它自己决定
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade pip
+          pip install buildozer==1.5.0
+
+      # 5. 开始构建
+      - name: Build with Buildozer
+        run: |
+          yes | buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: package
-          # 注意：这个 Action 生成的文件路径可能在 bin 下
           path: bin/*.apk
