@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9' # 降级 Python 到 3.9，兼容性更好
+          python-version: '3.9'
 
       - name: Install dependencies
         run: |
@@ -65,13 +65,11 @@ jobs:
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          # 关键修改：强制安装特定版本的 buildozer 和 cython，并安装 python-for-android
-          pip install buildozer==1.5.0 cython==0.29.33 python-for-android==2023.6.0
+          # 修正版本号：使用存在的 python-for-android 版本
+          pip install buildozer==1.5.0 cython==0.29.33 python-for-android==2023.9.16
 
       - name: Build with Buildozer
         run: |
-          # 修复 Cython 问题：手动创建头文件链接
-          # 这是一个已知的 hack，用于解决 Pygame 在新环境下找不到 longintrepr.h 的问题
           yes | buildozer android debug
 
       - name: Upload APK
