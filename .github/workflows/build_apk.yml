@@ -14,6 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1. 清理磁盘空间（必须，否则打包到一半会崩）
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -25,53 +26,37 @@ jobs:
           docker-images: true
           swap-storage: true
 
+      # 2. 设置 Python 3.9（兼容性之王）
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
+      # 3. 安装所有可能的系统依赖（宁滥勿缺）
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            git \
-            python3-pip \
-            python3-setuptools \
-            python3-venv \
-            libffi-dev \
-            libssl-dev \
-            autoconf \
-            libtool \
-            pkg-config \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo5 \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            automake \
-            gettext \
-            autopoint \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev
+            build-essential git python3-pip python3-setuptools python3-venv \
+            libffi-dev libssl-dev autoconf libtool pkg-config zlib1g-dev \
+            libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev \
+            libssl-dev zip unzip openjdk-17-jdk automake gettext autopoint \
+            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
+      # 4. 安装 Buildozer 和 Cython（使用验证过的版本）
+      # 注意：这里我们不手动装 p4a，让 buildozer 自己去拉取最新的修复版
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          # 修正版本号：使用存在的 python-for-android 版本
-          pip install buildozer==1.5.0 cython==0.29.33 python-for-android==2023.9.16
+          pip install buildozer==1.5.0 cython==0.29.33
 
+      # 5. 开始构建（增加 --verbose 参数方便排错）
       - name: Build with Buildozer
         run: |
-          yes | buildozer android debug
+          # 自动接受协议
+          yes | buildozer android debug --verbose
 
+      # 6. 上传结果
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
